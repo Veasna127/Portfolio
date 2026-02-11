@@ -1,41 +1,48 @@
 # Use official PHP image with Apache
 FROM php:8.2-apache
 
-# Set working directory
-WORKDIR /var/www/html
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libonig-dev \
     libzip-dev \
+    libpq-dev \
     zip \
     curl
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip
+# Install PHP extensions (including PostgreSQL)
+RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Copy project files
-COPY . .
+# Set working directory
+WORKDIR /var/www/html
 
-# Install Composer
+# Copy project files
+COPY . /var/www/html
+
+# Install Composer and dependencies
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configure Apache to point to the public directory
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Update Apache configuration to point to public directory
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
+# Update Directory directive
+RUN echo '<Directory /var/www/html/public>\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/sites-available/000-default.conf
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache in foreground
+# Start Apache
 CMD ["apache2-foreground"]
