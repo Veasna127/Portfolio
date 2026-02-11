@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 // ----------------------------
 // Guest routes (for users who are not logged in)
 // ----------------------------
+Route::get('/', function () {
+    return view(view: 'home'); // or whatever your homepage view is called
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
