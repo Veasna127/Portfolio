@@ -28,27 +28,28 @@ Route::middleware('guest')->group(function () {
 // ----------------------------
 // Authenticated routes (user must be logged in)
 // ----------------------------
+// Remove from auth middleware, put at top level
+Route::get('/skill', function () {
+    return view('skill');
+})->name('skill');
+
+Route::get('/project', function () {
+    return view('project');
+})->name('project');
+
+Route::get('/education', function () {
+    return view('education');
+})->name('education');
+
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
+// Keep only logout in auth middleware
 Route::middleware('auth')->group(function () {
-    Route::get('/skill', function () {
-        return view('skill');
-    })->name('skill');
-
-    Route::get('/project', function () {
-        return view('project');
-    })->name('project');
-
-    Route::get('/education', function () {
-        return view('education');
-    })->name('education');
-
-    Route::get('/about', function () {
-        return view('about');
-    })->name('about');
-
-    Route::get('/contact', function () {
-        return view('contact');
-    })->name('contact');
-
-    // Logout route
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
