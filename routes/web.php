@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 // ----------------------------
@@ -31,6 +32,9 @@ Route::middleware('guest')->group(function () {
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
